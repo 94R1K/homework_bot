@@ -63,10 +63,6 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет ответ API на корректность."""
-    if 'homeworks' not in response:
-        raise KeyError('Отсутствует ключ "homeworks" в ответе API')
-    if 'current_date' not in response:
-        raise KeyError('Отсутствует ключ "current_date" в ответе API')
     if response is None:
         assert logging.error('Словарь пуст')
     homework = response['homeworks']
