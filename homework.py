@@ -66,10 +66,6 @@ def check_response(response):
         error_message = 'ДЗ должно приходить в виде списка'
         logger.exception(error_message)
         raise NotGettingListException(error_message)
-    try:
-        homework = homework[0]
-    except IndexError:
-        raise IndexError('Список работ пуст')
     return homework
 
 
@@ -90,7 +86,7 @@ def check_tokens():
     """Проверяет доступность переменных окружения."""
     if PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
         return True
-    logger.critical('Отсутствуют обязательные переменные окружения!!!')
+    logger.critical('Отсутствуют обязательные переменные окружения')
     return False
 
 
