@@ -2,11 +2,12 @@ import logging
 import os
 import time
 from http import HTTPStatus
+
 import requests
 import telegram
 from dotenv import load_dotenv
 
-from exceptions import EmptyResponseException, NotGettingListException, KeyMissingException
+from exceptions import EmptyResponseException, NotGettingListException
 
 load_dotenv()
 

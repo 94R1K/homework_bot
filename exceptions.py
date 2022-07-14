@@ -6,8 +6,3 @@ class EmptyResponseException(Exception):
 class NotGettingListException(Exception):
     """Исключение, возникающее при получении домашки не в виде списка."""
     pass
-
-
-class KeyMissingException(Exception):
-    """Исключение, возникающее при отсутствии ключа 'homeworks'."""
-    pass
