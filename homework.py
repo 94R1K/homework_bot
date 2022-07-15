@@ -63,7 +63,7 @@ def check_response(response):
         error_message = 'Ответ от сервера пуст'
         logger.exception(error_message)
         raise EmptyResponseException(error_message)
-    if 'homeworks' not in response:
+    if not response['homeworks']:
         raise KeyError('Ключ "homeworks" отсутствует в словаре')
     homework = response['homeworks']
     if not isinstance(homework, list):
