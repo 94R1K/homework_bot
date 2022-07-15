@@ -1,10 +1,10 @@
 import logging
 import os
 import time
-from http import HTTPStatus
-
 import requests
 import telegram
+from urllib.error import HTTPError
+from http import HTTPStatus
 from dotenv import load_dotenv
 
 from exceptions import EmptyResponseException, NotGettingListException
@@ -36,18 +36,23 @@ HOMEWORK_STATUSES = {
 
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат."""
-    if not bot.send_message(
+    try:
+        bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
-            text=message):
-        logger.exception('Сбой при отправке сообщения')
-    logger.info('Сообщение доставлено')
+            text=message)
+        logger.info('Сообщение доставлено')
+    except Exception as e:
+        logger.exception('Сбой при отправке сообщения', exc_info=e)
 
 
 def get_api_answer(current_timestamp):
     """Запрос к эндпоинту и возвращение ответа API."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    try:
+        response = requests.get(ENDPOINT, headers=HEADERS, params=params)
+    except Exception as e:
+        logger.exception('Ошибка в получении ответа от API', exc_info=e)
     if response.status_code != HTTPStatus.OK:
         raise Exception(f'Ответ от API: {response.status_code}')
     return response.json()
@@ -60,7 +65,7 @@ def check_response(response):
         logger.exception(error_message)
         raise EmptyResponseException(error_message)
     if 'homeworks' not in response:
-        logger.exception('Ключ "homeworks" отсутствует в словаре')
+        raise KeyError('Ключ "homeworks" отсутствует в словаре')
     homework = response['homeworks']
     if not isinstance(homework, list):
         error_message = 'ДЗ должно приходить в виде списка'
@@ -76,9 +81,9 @@ def parse_status(homework):
         homework_status = homework['status']
     except KeyError:
         raise KeyError('Ключ "homework_name" или "status" отсутствуют.')
-    verdict = HOMEWORK_STATUSES[homework_status]
     if homework_status not in HOMEWORK_STATUSES:
         logger.exception(f'Статус {homework_status} невозможно обработать')
+    verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
@@ -92,21 +97,27 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    condition = check_tokens()
+    if check_tokens() is False:
+        message = 'Переменная(-ые) окружения недоступна(-ы)'
+        logger.critical(message)
+        raise SystemExit(message)
     logger.warning('Бот запушен')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    while condition:
+    duplicate_message = ''
+    while True:
         try:
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
             message = parse_status(homework)
             send_message(bot, message)
-            current_timestamp = int(time.time())
             time.sleep(RETRY_TIME)
+            current_timestamp = int(response['current_date'])
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            send_message(bot, message)
+            if message != duplicate_message:
+                send_message(bot, message)
+                duplicate_message = message
             time.sleep(RETRY_TIME)
 
 
