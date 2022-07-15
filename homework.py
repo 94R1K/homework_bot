@@ -1,9 +1,10 @@
 import logging
 import os
 import time
+from http import HTTPStatus
+
 import requests
 import telegram
-from http import HTTPStatus
 from dotenv import load_dotenv
 
 from exceptions import EmptyResponseException, NotGettingListException
