@@ -3,7 +3,6 @@ import os
 import time
 import requests
 import telegram
-from urllib.error import HTTPError
 from http import HTTPStatus
 from dotenv import load_dotenv
 
