@@ -41,8 +41,10 @@ def send_message(bot, message):
             chat_id=TELEGRAM_CHAT_ID,
             text=message)
         logger.info('Сообщение доставлено')
+        return True
     except Exception as e:
         logger.exception('Сбой при отправке сообщения', exc_info=e)
+        return False
 
 
 def get_api_answer(current_timestamp):
@@ -51,8 +53,8 @@ def get_api_answer(current_timestamp):
     params = {'from_date': timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
-    except Exception as e:
-        logger.exception('Ошибка в получении ответа от API', exc_info=e)
+    except Exception:
+        raise Exception('Ошибка в получении ответа от API')
     if response.status_code != HTTPStatus.OK:
         raise Exception(f'Ответ от API: {response.status_code}')
     return response.json()
@@ -97,7 +99,7 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    if check_tokens() is False:
+    if not check_tokens():
         message = 'Переменная(-ые) окружения недоступна(-ы)'
         logger.critical(message)
         raise SystemExit(message)
@@ -115,8 +117,7 @@ def main():
             current_timestamp = int(response['current_date'])
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
-            if message != duplicate_message:
-                send_message(bot, message)
+            if message != duplicate_message and send_message(bot, message):
                 duplicate_message = message
             time.sleep(RETRY_TIME)
 
