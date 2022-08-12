@@ -73,7 +73,7 @@ def check_response(response):
         error_message = 'ДЗ должно приходить в виде списка'
         logger.exception(error_message)
         raise NotGettingListException(error_message)
-    return homework
+    return homework[0]
 
 
 def parse_status(homework):
