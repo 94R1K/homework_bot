@@ -113,8 +113,8 @@ def main():
             homework = check_response(response)
             message = parse_status(homework)
             send_message(bot, message)
-            time.sleep(RETRY_TIME)
             current_timestamp = int(response['current_date'])
+            time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             if message != duplicate_message and send_message(bot, message):
