@@ -50,7 +50,7 @@ def send_message(bot, message):
 def get_api_answer(current_timestamp):
     """Запрос к эндпоинту и возвращение ответа API."""
     timestamp = current_timestamp or int(time.time())
-    params = {'from_date': timestamp}
+    params = {'from_date': 0}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
     except Exception:
@@ -107,12 +107,14 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     duplicate_message = ''
+    duplicate_status = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
             message = parse_status(homework)
-            send_message(bot, message)
+            if message != duplicate_status and send_message(bot, message):
+                duplicate_status = message
             current_timestamp = int(response['current_date'])
             time.sleep(RETRY_TIME)
         except Exception as error:
