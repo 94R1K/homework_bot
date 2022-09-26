@@ -1,2 +1,2 @@
 # homework_bot
-python telegram bot
+Бот для пересылки статуса домашней работы в telegram.
